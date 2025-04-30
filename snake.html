@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>贪吃蛇 Snake Game</title>
+  <title>贪吃蛇</title>
   <style>
     canvas {
       background: #000;
@@ -18,8 +18,8 @@
   </style>
 </head>
 <body>
-  <h1>贪吃蛇 Snake Game</h1>
-  <p>方向キー（↑↓←→）で操作</p>
+  <h1>贪吃蛇</h1>
+  <p>方向键操作,单击画面重新开始</p>
   <canvas id="game" width="400" height="400"></canvas>
 
   <script>
@@ -30,14 +30,29 @@
     const rows = canvas.height / box;
     const columns = canvas.width / box;
 
-    let snake = [{ x: 9 * box, y: 9 * box }];
-    let direction = "RIGHT";
+    let snake, direction, food, score;
+    let isGameOver = false;
+
+    function resetGame() {
+      snake = [{ x: 9 * box, y: 9 * box }];
+      direction = "RIGHT";
+      food = randomFood();
+      score = 0;
+      isGameOver = false;
+    }
+
+    resetGame();
 
     document.addEventListener("keydown", event => {
       if (event.key === "ArrowLeft" && direction !== "RIGHT") direction = "LEFT";
       if (event.key === "ArrowUp" && direction !== "DOWN") direction = "UP";
       if (event.key === "ArrowRight" && direction !== "LEFT") direction = "RIGHT";
       if (event.key === "ArrowDown" && direction !== "UP") direction = "DOWN";
+    });
+
+    // 点击页面重新开始
+    document.addEventListener("click", () => {
+      if (isGameOver) resetGame();
     });
 
     function randomFood() {
@@ -47,18 +62,23 @@
       };
     }
 
-    let food = randomFood();
-
     function draw() {
+      if (isGameOver) return;
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       // draw food
       ctx.fillStyle = "red";
       ctx.fillRect(food.x, food.y, box, box);
 
+      // draw score
+      ctx.fillStyle = "white";
+      ctx.font = "16px sans-serif";
+      ctx.fillText("得分：" + score, 10, 20);
+
       // draw snake
+      ctx.fillStyle = "lime"; // 所有蛇身绿色
       for (let i = 0; i < snake.length; i++) {
-        ctx.fillStyle = i === 0 ? "lime" : "white";
         ctx.fillRect(snake[i].x, snake[i].y, box, box);
       }
 
@@ -69,16 +89,16 @@
       if (direction === "UP") head.y -= box;
       if (direction === "DOWN") head.y += box;
 
-      // check collision
+      // check collision (完全碰到边缘才算死亡)
       if (
-        head.x < 0 || head.x >= canvas.width ||
-        head.y < 0 || head.y >= canvas.height ||
+        head.x < 0 || head.x + box > canvas.width ||
+        head.y < 0 || head.y + box > canvas.height ||
         snake.some(seg => seg.x === head.x && seg.y === head.y)
       ) {
-        alert("游戏结束！Game Over!");
-        snake = [{ x: 9 * box, y: 9 * box }];
-        direction = "RIGHT";
-        food = randomFood();
+        isGameOver = true;
+        setTimeout(() => {
+          alert("游戏结束！得分：" + score + "\n单击画面重新开始");
+        }, 10);
         return;
       }
 
@@ -86,6 +106,7 @@
 
       // check if eat
       if (head.x === food.x && head.y === food.y) {
+        score++;
         food = randomFood();
       } else {
         snake.pop();
