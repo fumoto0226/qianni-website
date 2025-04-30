@@ -4,12 +4,14 @@
   <meta charset="UTF-8">
   <title>贪吃蛇小游戏</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- 像素字体 -->
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
   <style>
     body {
       background: #1e1e1e;
       color: #fff;
       text-align: center;
-      font-family: sans-serif;
+      font-family: 'Press Start 2P', sans-serif;
       margin: 0;
       padding: 0;
       overflow-x: hidden;
@@ -18,14 +20,15 @@
     canvas {
       background: #000;
       display: block;
-      margin: 20px auto;
+      margin: 10px auto;
+      border: 2px solid #444;
     }
 
     .buttons {
       display: flex;
       flex-direction: column;
       align-items: center;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
     }
 
     .btn-row {
@@ -34,54 +37,60 @@
     }
 
     .btn {
-      width: 80px;
-      height: 80px;
-      font-size: 30px;
-      margin: 5px;
-      border-radius: 10px;
+      width: 60px;
+      height: 60px;
+      font-size: 24px;
+      margin: 4px;
+      border-radius: 6px;
       border: none;
       background-color: #444;
       color: white;
+      font-family: 'Press Start 2P', sans-serif;
     }
 
     .btn:active {
       background-color: #666;
     }
 
-    @media (min-width: 600px) {
-      .buttons {
-        margin-top: 10px;
-      }
+    .scoreboard {
+      margin-top: 10px;
+      font-size: 12px;
     }
   </style>
 </head>
 <body>
-  <h1>贪吃蛇小游戏</h1>
-  <p>使用 ↑↓←→ 或点击按钮进行操作，点击页面重新开始</p>
-  <canvas id="game" width="600" height="600"></canvas>
+  <h1>贪吃蛇</h1>
+  <p>使用 ↑↓←→ 或按钮操作，点一下重新开始</p>
 
-  <!-- 屏幕方向按钮 -->
+  <canvas id="game" width="400" height="400"></canvas>
+
+  <!-- 操作按钮 -->
   <div class="buttons">
     <div class="btn-row">
-      <button class="btn" onclick="setDirection('UP')">↑</button>
+      <button class="btn" onclick="setDirection('UP')" ontouchstart="setDirection('UP')">&#8593;</button>
     </div>
     <div class="btn-row">
-      <button class="btn" onclick="setDirection('LEFT')">←</button>
-      <button class="btn" onclick="setDirection('DOWN')">↓</button>
-      <button class="btn" onclick="setDirection('RIGHT')">→</button>
+      <button class="btn" onclick="setDirection('LEFT')" ontouchstart="setDirection('LEFT')">&#8592;</button>
+      <button class="btn" onclick="setDirection('DOWN')" ontouchstart="setDirection('DOWN')">&#8595;</button>
+      <button class="btn" onclick="setDirection('RIGHT')" ontouchstart="setDirection('RIGHT')">&#8594;</button>
     </div>
+  </div>
+
+  <!-- 排行榜 -->
+  <div class="scoreboard" id="ranking">
+    <h3>🏆 TOP5</h3>
+    <ol id="rankList"></ol>
   </div>
 
   <script>
     const canvas = document.getElementById("game");
     const ctx = canvas.getContext("2d");
-
-    const box = 30;
+    const box = 20;
     const rows = canvas.height / box;
     const columns = canvas.width / box;
 
-    let snake, direction, food, score;
-    let isGameOver = false;
+    let snake, direction, food, score, isGameOver;
+    let rankList = JSON.parse(localStorage.getItem("snake_ranks")) || [];
 
     function resetGame() {
       snake = [{ x: 9 * box, y: 9 * box }];
@@ -92,15 +101,14 @@
     }
 
     resetGame();
+    updateRankUI();
 
-    // 禁止方向键滚动页面
     window.addEventListener("keydown", function (e) {
       if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
         e.preventDefault();
       }
     }, { passive: false });
 
-    // 监听方向键
     document.addEventListener("keydown", event => {
       if (event.key === "ArrowLeft" && direction !== "RIGHT") direction = "LEFT";
       if (event.key === "ArrowUp" && direction !== "DOWN") direction = "UP";
@@ -115,7 +123,6 @@
       if (dir === "DOWN" && direction !== "UP") direction = "DOWN";
     }
 
-    // 点击页面重新开始
     document.addEventListener("click", () => {
       if (isGameOver) resetGame();
     });
@@ -131,38 +138,31 @@
       if (isGameOver) return;
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // 食物
       ctx.fillStyle = "red";
       ctx.fillRect(food.x, food.y, box, box);
 
-      // 分数
       ctx.fillStyle = "white";
-      ctx.font = "20px sans-serif";
-      ctx.fillText("分数：" + score, 10, 25);
+      ctx.font = "12px 'Press Start 2P'";
+      ctx.fillText("分数: " + score, 10, 18);
 
-      // 蛇
       ctx.fillStyle = "lime";
-      snake.forEach(part => {
-        ctx.fillRect(part.x, part.y, box, box);
-      });
+      snake.forEach(part => ctx.fillRect(part.x, part.y, box, box));
 
-      // 移动
       let head = { ...snake[0] };
       if (direction === "LEFT") head.x -= box;
       if (direction === "RIGHT") head.x += box;
       if (direction === "UP") head.y -= box;
       if (direction === "DOWN") head.y += box;
 
-      // 撞墙或撞自己
       if (
         head.x < 0 || head.x + box > canvas.width ||
         head.y < 0 || head.y + box > canvas.height ||
         snake.some(seg => seg.x === head.x && seg.y === head.y)
       ) {
         isGameOver = true;
+        updateRank(score);
         setTimeout(() => {
-          alert("游戏结束！分数：" + score + "。点击任意处重新开始");
+          alert("GAME OVER! 分数: " + score);
         }, 10);
         return;
       }
@@ -175,6 +175,24 @@
       } else {
         snake.pop();
       }
+    }
+
+    function updateRank(score) {
+      rankList.push(score);
+      rankList.sort((a, b) => b - a);
+      rankList = rankList.slice(0, 5);
+      localStorage.setItem("snake_ranks", JSON.stringify(rankList));
+      updateRankUI();
+    }
+
+    function updateRankUI() {
+      const rankDom = document.getElementById("rankList");
+      rankDom.innerHTML = "";
+      rankList.forEach((score, index) => {
+        const li = document.createElement("li");
+        li.textContent = `${index + 1}、${score} 分`;
+        rankDom.appendChild(li);
+      });
     }
 
     setInterval(draw, 150);
