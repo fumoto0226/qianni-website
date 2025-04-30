@@ -1,32 +1,82 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="zh">
 <head>
   <meta charset="UTF-8">
-  <title>贪吃蛇</title>
+  <title>贪吃蛇小游戏</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
+    body {
+      background: #1e1e1e;
+      color: #fff;
+      text-align: center;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+
     canvas {
       background: #000;
       display: block;
-      margin: 50px auto;
+      margin: 20px auto;
     }
-    body {
-      text-align: center;
-      color: #fff;
-      background: #1e1e1e;
-      font-family: sans-serif;
+
+    .buttons {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .btn-row {
+      display: flex;
+      justify-content: center;
+    }
+
+    .btn {
+      width: 80px;
+      height: 80px;
+      font-size: 30px;
+      margin: 5px;
+      border-radius: 10px;
+      border: none;
+      background-color: #444;
+      color: white;
+    }
+
+    .btn:active {
+      background-color: #666;
+    }
+
+    @media (min-width: 600px) {
+      .buttons {
+        margin-top: 10px;
+      }
     }
   </style>
 </head>
 <body>
-  <h1>贪吃蛇</h1>
-  <p>方向键操作,单击画面重新开始</p>
-  <canvas id="game" width="400" height="400"></canvas>
+  <h1>贪吃蛇小游戏</h1>
+  <p>使用 ↑↓←→ 或点击按钮进行操作，点击页面重新开始</p>
+  <canvas id="game" width="600" height="600"></canvas>
+
+  <!-- 屏幕方向按钮 -->
+  <div class="buttons">
+    <div class="btn-row">
+      <button class="btn" onclick="setDirection('UP')">↑</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn" onclick="setDirection('LEFT')">←</button>
+      <button class="btn" onclick="setDirection('DOWN')">↓</button>
+      <button class="btn" onclick="setDirection('RIGHT')">→</button>
+    </div>
+  </div>
 
   <script>
     const canvas = document.getElementById("game");
     const ctx = canvas.getContext("2d");
 
-    const box = 20;
+    const box = 30;
     const rows = canvas.height / box;
     const columns = canvas.width / box;
 
@@ -43,12 +93,27 @@
 
     resetGame();
 
+    // 禁止方向键滚动页面
+    window.addEventListener("keydown", function (e) {
+      if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
+        e.preventDefault();
+      }
+    }, { passive: false });
+
+    // 监听方向键
     document.addEventListener("keydown", event => {
       if (event.key === "ArrowLeft" && direction !== "RIGHT") direction = "LEFT";
       if (event.key === "ArrowUp" && direction !== "DOWN") direction = "UP";
       if (event.key === "ArrowRight" && direction !== "LEFT") direction = "RIGHT";
       if (event.key === "ArrowDown" && direction !== "UP") direction = "DOWN";
     });
+
+    function setDirection(dir) {
+      if (dir === "LEFT" && direction !== "RIGHT") direction = "LEFT";
+      if (dir === "RIGHT" && direction !== "LEFT") direction = "RIGHT";
+      if (dir === "UP" && direction !== "DOWN") direction = "UP";
+      if (dir === "DOWN" && direction !== "UP") direction = "DOWN";
+    }
 
     // 点击页面重新开始
     document.addEventListener("click", () => {
@@ -67,29 +132,29 @@
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // draw food
+      // 食物
       ctx.fillStyle = "red";
       ctx.fillRect(food.x, food.y, box, box);
 
-      // draw score
+      // 分数
       ctx.fillStyle = "white";
-      ctx.font = "16px sans-serif";
-      ctx.fillText("得分：" + score, 10, 20);
+      ctx.font = "20px sans-serif";
+      ctx.fillText("分数：" + score, 10, 25);
 
-      // draw snake
-      ctx.fillStyle = "lime"; // 所有蛇身绿色
-      for (let i = 0; i < snake.length; i++) {
-        ctx.fillRect(snake[i].x, snake[i].y, box, box);
-      }
+      // 蛇
+      ctx.fillStyle = "lime";
+      snake.forEach(part => {
+        ctx.fillRect(part.x, part.y, box, box);
+      });
 
-      // move
+      // 移动
       let head = { ...snake[0] };
       if (direction === "LEFT") head.x -= box;
       if (direction === "RIGHT") head.x += box;
       if (direction === "UP") head.y -= box;
       if (direction === "DOWN") head.y += box;
 
-      // check collision (完全碰到边缘才算死亡)
+      // 撞墙或撞自己
       if (
         head.x < 0 || head.x + box > canvas.width ||
         head.y < 0 || head.y + box > canvas.height ||
@@ -97,14 +162,13 @@
       ) {
         isGameOver = true;
         setTimeout(() => {
-          alert("游戏结束！得分：" + score + "\n单击画面重新开始");
+          alert("游戏结束！分数：" + score + "。点击任意处重新开始");
         }, 10);
         return;
       }
 
       snake.unshift(head);
 
-      // check if eat
       if (head.x === food.x && head.y === food.y) {
         score++;
         food = randomFood();
