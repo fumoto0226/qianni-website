@@ -68,18 +68,22 @@
   <script>
     function startTest() {
       const progressBar = document.getElementById("progress-bar");
+      progressBar.style.display = "block";
       progressBar.style.transition = "none";
       progressBar.style.width = "0%";
-
-      // 补一下重新解析动画
-      void progressBar.offsetWidth;
-
-      progressBar.style.transition = "width 5s linear";
-      progressBar.style.width = "100%";
 
       document.getElementById("progress-container").style.display = "block";
       document.getElementById("status").style.display = "block";
       document.getElementById("result").style.display = "none";
+
+      // 确保 reflow 生效（强制刷新样式）
+      void progressBar.offsetHeight;
+
+      // 设置动画属性 + 启动动画
+      progressBar.style.transition = "width 5s linear";
+      setTimeout(() => {
+        progressBar.style.width = "100%";
+      }, 50);
 
       setTimeout(() => {
         showResult();
