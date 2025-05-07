@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>qianni-web</title>
+  <title>qianni-web - Action</title>
   <style>
     html, body {
       margin: 0;
@@ -108,65 +108,17 @@
     .container {
       width: 100vw;
       height: calc(100vh - 60px);
-      background-image: url('images/bg001.svg');
-      background-size: contain;
-      background-repeat: no-repeat;
-      background-position: center;
       display: flex;
       justify-content: center;
       align-items: center;
     }
-
-    .game-menu {
-      position: absolute;
-      bottom: 20px;
-      right: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-    }
-    .game-icon {
-      width: 60px;
-      height: 60px;
-      border: 2px dashed #cccccc00;
-      border-radius: 50%;
-      background-image: url('images/game001.svg');
-      background-size: cover;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-    .game-list {
-      width: 150px;
-      display: none;
-      flex-direction: column;
-      margin-bottom: 10px;
-      background: #fff;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      padding: 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    .game-list a {
-      text-decoration: none;
-      color: #000;
-      padding: 6px 0;
-      white-space: nowrap;
-    }
   </style>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      const icon = document.querySelector('.game-icon');
-      const menu = document.querySelector('.game-list');
       const worksToggle = document.querySelector('.works-toggle');
       const worksDropdown = document.querySelector('.works-dropdown');
 
-      let expanded = false;
       let worksExpanded = false;
-
-      const toggleMenu = () => {
-        expanded = !expanded;
-        menu.style.display = expanded ? 'flex' : 'none';
-      };
 
       const toggleWorks = () => {
         worksExpanded = !worksExpanded;
@@ -174,14 +126,9 @@
         worksToggle.classList.toggle('active');
       };
 
-      icon.addEventListener('click', toggleMenu);
       worksToggle.addEventListener('click', toggleWorks);
 
       document.addEventListener('click', (e) => {
-        if (!e.target.closest('.game-menu')) {
-          expanded = false;
-          menu.style.display = 'none';
-        }
         if (!e.target.closest('.works-dropdown') && !e.target.closest('.works-toggle')) {
           worksExpanded = false;
           worksDropdown.classList.remove('show');
@@ -193,12 +140,12 @@
 </head>
 <body>
   <nav>
-    <a href="index.html" class="active">home</a>
+    <a href="index.html">home</a>
     <div class="works-container">
-      <div class="works-toggle">works</div>
+      <div class="works-toggle active">works</div>
       <div class="works-dropdown">
         <a href="painting.html">painting</a>
-        <a href="action.html">action</a>
+        <a href="action.html" class="active">action</a>
         <a href="installation.html">installation</a>
         <a href="sketch.html">sketch</a>
         <a href="book.html">book</a>
@@ -208,14 +155,7 @@
     <a href="about.html">about me</a>
   </nav>
   <div class="container">
-    <!-- 背景图片区域 -->
-  </div>
-  <div class="game-menu">
-    <div class="game-icon"></div>
-    <div class="game-list">
-      <a href="snake.html">🎮 贪吃蛇</a>
-      <a href="xingbie.html">👭 测性别</a>
-    </div>
+    <!-- 行为艺术展示区域 -->
   </div>
 </body>
-</html>
+</html> 
