@@ -93,12 +93,28 @@
       padding: 6px 0;
       white-space: nowrap;
     }
-
-    .game-menu:hover .game-list,
-    .game-menu:focus-within .game-list {
-      display: flex;
-    }
   </style>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const icon = document.querySelector('.game-icon');
+      const menu = document.querySelector('.game-list');
+
+      let expanded = false;
+
+      const toggleMenu = () => {
+        expanded = !expanded;
+        menu.style.display = expanded ? 'flex' : 'none';
+      };
+
+      icon.addEventListener('click', toggleMenu);
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('.game-menu')) {
+          expanded = false;
+          menu.style.display = 'none';
+        }
+      });
+    });
+  </script>
 </head>
 <body>
   <nav>
